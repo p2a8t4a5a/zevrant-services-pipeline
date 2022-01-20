@@ -6,7 +6,7 @@ groupadd developers
 ##Install Node Exporter (Prometheus)
 mkdir -p /opt/node-exporter
 url="$(curl -s https://api.github.com/repos/prometheus/node_exporter/releases/latest | jq .assets[2].browser_download_url)"
-curl -L $(echo "$url" | cut -c 2-$((${#url}-1))) -o node-exporter.tar.gz
+curl -L "$(echo "$url" | cut -c 2-$((${#url}-1)))" -o node-exporter.tar.gz
 tar xvf node-exporter.tar.gz
 mv node_exporter-* node-exporter
 mv node-exporter/* /opt/node-exporter
@@ -50,9 +50,9 @@ echo "$3"
 
 openssl req -newkey rsa:4096 -nodes -keyout /opt/node-exporter/private.pem -days 8 -out ./public.csr -config ./openssl.conf
 echo 'Enter AWS Access Key Id.'
-read AWS_ACCESS_KEY_ID
+read -r AWS_ACCESS_KEY_ID
 echo 'Enter AWS Secret Access Key'
-read AWS_SECRET_ACCESS_KEY
+read -r AWS_SECRET_ACCESS_KEY
 
 mkdir -p ~/.aws/
 
@@ -117,6 +117,20 @@ ExecStart=/usr/local/bin/kubeconfig.sh
 WantedBy=multi-user.target
 EOF
 
+cat << EOF > /etc/systemd/system/lvm-configurer.service
+[Unit]
+Description=Kube Config
+
+Before=network.target
+
+[Service]
+User=root
+ExecStart=chown nbd /dev/nfs-vg/nfs-lv
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
 cat << EOF > /usr/local/bin/kubeconfig.sh
 #!/bin/bash
 sysctl net.ipv4.conf.all.forwarding=1
@@ -161,5 +175,5 @@ systemctl enable docker
 sed -i 's~ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock~ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock --exec-opt native.cgroupdriver=systemd~g' /lib/systemd/system/docker.service
 
 echo "Installation Complete Press Enter to Reboot"
-read
+read -r
 reboot

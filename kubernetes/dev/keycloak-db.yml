@@ -35,7 +35,7 @@ spec:
         - name: database
           nfs:
             server: nfs-controller.zevrant-services.com
-            path: /i-data/420aa917/nfs/keycloak-dev
+            path: /nfs/exports/keycloak-dev
       nodeSelector:
         architecture: amd64
       containers:

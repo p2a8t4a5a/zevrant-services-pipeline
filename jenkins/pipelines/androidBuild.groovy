@@ -28,11 +28,11 @@ pipeline {
     stages {
 
         stage("Unit Test") {
-            when { expression { runTests && false } } //disable for not TODO
+            when { expression { runTests } }
             steps {
                 container('android-emulator') {
                     script {
-                        sh "bash gradlew clean testDevelopTest"
+                        sh "bash gradlew clean testDevelopTestUnitTest"
                     }
                 }
             }
