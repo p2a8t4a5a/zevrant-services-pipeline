@@ -148,6 +148,9 @@ tls_server_config:
   key_file: private.pem
 EOF
 
+echo "vm.max_map_count = 262144" >> /etc/sysctl.conf
+sysctl -p
+
 chown -R node-exporter:developers /opt/node-exporter
 chown root:root /usr/local/bin/kubeconfig.sh
 chmod 0700 /usr/local/bin/kubeconfig.sh
