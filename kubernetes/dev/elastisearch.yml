@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: zevrant-elastisearch-master-service
+spec:
+  ports:
+    - port: 9200
+      targetPort: 9200
+  selector:
+    app: zevrant-elastisearch-master-service
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zevrant-elastisearch-master-service
+  labels:
+    app: zevrant-elastisearch-master-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zevrant-elastisearch-master-service
+  template:
+    metadata:
+      labels:
+        app: zevrant-elastisearch-master-service
+    spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+      imagePullSecrets:
+        - name: regcred
+      volumes:
+        - name: elastisearch-data
+          nfs:
+            server: nfs-controller.zevrant-services.com
+            path: /nfs/exports/elastisearch-data-master-develop
+        - name: elastisearch-config
+          nfs:
+            server: nfs-controller.zevrant-services.com
+            path: /nfs/exports/elastisearch-config-master-develop
+      nodeSelector:
+        architecture: amd64
+      containers:
+        - name: zevrant-elastisearch-master-service
+          image: docker.io/elasticsearch:7.16.3
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: elastisearch-data
+              mountPath: /usr/share/elasticsearch/data
+            - name: elastisearch-config
+              mountPath: /usr/share/elasticsearch/config
+          ports:
+            - containerPort: 9200
+          readinessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /_cat/nodes?v&pretty
+              port: 9200
+            initialDelaySeconds: 60
+          livenessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /_cat/nodes?v&pretty
+              port: 9200
+            initialDelaySeconds: 60
+          env:
+            - name: node.name
+              value: zevrant-elastisearch-master-service
+            - name: cluster.name
+              value: zevrant-services-develop
+            - name: cluster.initial_master_nodes
+              value: zevrant-elastisearch-master-service
+            - name: node.max_local_storage_nodes
+              value: '15'
+            - name: bootstrap.memory_lock
+              value: 'false'
+            - name: ES_JAVA_OPTS
+              value: '-Xms7000m -Xmx7000m'
+          resources:
+            requests:
+              memory: 8Gi
+              cpu: 2000m
+            limits:
+              memory: 8Gi
+              cpu: 2000m
+

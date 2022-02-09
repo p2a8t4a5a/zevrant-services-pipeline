@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: zevrant-vault-service
+spec:
+  type: NodePort
+  ports:
+    - port: 443
+      targetPort: 8200
+      nodePort: 30129
+  selector:
+    app: zevrant-vault-service
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zevrant-vault-service
+  annotations:
+    iam.amazonaws.com/role: OauthServiceRole
+  labels:
+    app: zevrant-vault-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zevrant-vault-service
+  template:
+    metadata:
+      labels:
+        app: zevrant-vault-service
+    spec:
+      volumes:
+        - name: vault-data
+          nfs:
+            server: nfs-controller.zevrant-services.com
+            path: /nfs/exports/vault-develop
+      nodeSelector:
+        architecture: amd64
+      containers:
+        - name: vault-unsealer
+          image: docker.io/zevrant/vault-unsealer:latest
+          imagePullPolicy: "Always"
+          env:
+            - name: URL
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: KEY1
+              valueFrom:
+                secretKeyRef:
+                  name: vault-key
+                  key: vault-key-1
+            - name: KEY2
+              valueFrom:
+                secretKeyRef:
+                  name: vault-key
+                  key: vault-key-2
+            - name: KEY3
+              valueFrom:
+                secretKeyRef:
+                  name: vault-key
+                  key: vault-key-3
+        - name: zevrant-vault-service
+          image: docker.io/zevrant/vault:latest
+          securityContext:
+            capabilities:
+              add:
+                - IPC_LOCK
+          imagePullPolicy: Always
+          args:
+            - server
+          volumeMounts:
+            - name: vault-data
+              mountPath: /vault
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: vault-aws
+                  key: username
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: vault-aws
+                  key: password
+            - name: AWS_REGION
+              value: us-east-1
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: SERVICE_NAME
+              value: zevrant-vault-service
+#            - name: POSTGRES_DB
+#              value: keycloak
+          ports:
+            - containerPort: 8200
+          resources:
+            requests:
+              memory: 8Gi
+              cpu: 2000m
+            limits:
+              memory: 8Gi
+              cpu: 2000m
