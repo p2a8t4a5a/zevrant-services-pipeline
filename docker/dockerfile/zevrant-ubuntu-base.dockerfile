@@ -14,7 +14,7 @@ ENV PATH /usr/local/scripts:/usr/local/scripts/python:$JAVA_HOME/bin:$PATH:$NODE
 
 RUN groupadd --system developers
 
-COPY trusted-certs/zevrant-services-ca-root.crt zevrant-services-ca-root.crt
+COPY trusted-certs/zevrant-services-ca-root.crt /usr/local/share/ca-certificates/zevrant-services-ca-root.crt
 
-RUN echo yes | keytool --import --alias zevrant-services-root-ca --file zevrant-services-ca-root.crt --keystore $JAVA_HOME/lib/security/cacerts -storepass changeit \
-    && rm zevrant-services-ca-root.crt
+RUN echo yes | keytool --import --alias zevrant-services-root-ca --file /usr/local/share/ca-certificates/zevrant-services-ca-root.crt --keystore $JAVA_HOME/lib/security/cacerts -storepass changeit \
+    && update-ca-certificates
