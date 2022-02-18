@@ -21,14 +21,12 @@ username=$(curl --header "X-Vault-token: $token" "${VAULT_ADDR}/v1/${ENVIRONMENT
 username=$(echo "$username" | jq .data.data.value)
 username=$(echo "$username" | cut -c 2-$((${#username}-1)))
 password=$(curl --header "X-Vault-token: $token" "${VAULT_ADDR}/v1/${ENVIRONMENT}/data/certificate/password" --fail)
-echo $password
 password=$(echo "$password" | jq .data.data.value)
 password=$(echo "$password" | cut -c 2-$((${#password}-1)))
 certificateRequest=$(cat ~/public.csr)
 certificateRequest=$(printf "%q" "$certificateRequest")
 certificateRequest=$(echo "$certificateRequest" | cut -c 3-$((${#certificateRequest}-1)))
 certificateRequest="{\"certificateRequest\":\"$certificateRequest\",\"ip\":\"$POD_IP\"}"
-curl -L --insecure https://zevrant-01.zevrant-services.com:9009/zevrant-certificate-service/certs --data "$certificateRequest" -i -v --user "$username":"$password" -H "Content-Type: application/json" -O ~/public.crt
-cat ~/public.crt
+curl -L --insecure 'https://zevrant-01.zevrant-services.com:9009/zevrant-certificate-service/certs' --data "$certificateRequest" --user "$username":"$password" -H "Content-Type: application/json" | tee ~/public.crt
 openssl pkcs12 -export -inkey ~/private.pem -in ~/public.crt -passout "pass:$2" -out ~/zevrant-services.p12
 rm ~/public.crt ~/private.pem ~/openssl.conf
