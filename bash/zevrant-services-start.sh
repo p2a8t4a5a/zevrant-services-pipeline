@@ -21,6 +21,7 @@ username=$(curl --header "X-Vault-token: $token" "${VAULT_ADDR}/v1/${ENVIRONMENT
 username=$(echo "$username" | jq .data.data.value)
 username=$(echo "$username" | cut -c 2-$((${#username}-1)))
 password=$(curl --header "X-Vault-token: $token" "${VAULT_ADDR}/v1/${ENVIRONMENT}/data/certificate/password" --fail)
+echo $password
 password=$(echo "$password" | jq .data.data.value)
 password=$(echo "$password" | cut -c 2-$((${#password}-1)))
 certificateRequest=$(cat ~/public.csr)
