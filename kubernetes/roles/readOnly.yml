@@ -3,6 +3,6 @@ kind: ClusterRole
 metadata:
   name: readOnly
 rules:
-  - apiGroups: [ "", "apps" ] # "" indicates the core API group
-    resources: [ "pods", "services", "deployments" ]
+  - apiGroups: [ "", "apps", "autoscaling" ] # "" indicates the core API group
+    resources: [ "pods", "services", "deployments", "horizontalpodautoscalers" ]
     verbs: [ "get", "watch", "list" ]

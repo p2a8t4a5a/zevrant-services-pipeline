@@ -65,7 +65,7 @@ pipeline {
                         sh "kubectl apply -n zevrant-home-services-$ENVIRONMENT -f ./deployment.yml"
                         String deploymentName = ""
                         try{
-                            sh "kubectl get deployment $REPOSITORY"
+                            sh "kubectl get deployment $REPOSITORY -n zevrant-home-services-$ENVIRONMENT"
                             deploymentName = "$REPOSITORY"
                         } catch (Exception ignored) {
                             deploymentName = "$REPOSITORY-deployment"

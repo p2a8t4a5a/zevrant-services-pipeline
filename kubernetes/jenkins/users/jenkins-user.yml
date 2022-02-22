@@ -201,3 +201,41 @@ roleRef:
   kind: ClusterRole #this must be Role or ClusterRole
   name: deletePods # this must match the name of the Role or ClusterRole you wish to bind to
   apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jenkins-create-autoscaling-zevrant-home-services-prod
+  namespace: zevrant-home-services-prod
+subjects:
+  # You can specify more than one "subject"
+  - kind: ServiceAccount
+    name: jenkins # "name" is case sensitive
+    namespace: jenkins
+    apiGroup: ""
+roleRef:
+  # "roleRef" specifies the binding to a Role / ClusterRole
+  kind: ClusterRole #this must be Role or ClusterRole
+  name: createAutoscaling # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jenkins-create-autoscaling-zevrant-home-services-develop
+  namespace: zevrant-home-services-develop
+subjects:
+  # You can specify more than one "subject"
+  - kind: ServiceAccount
+    name: jenkins # "name" is case sensitive
+    namespace: jenkins
+    apiGroup: ""
+roleRef:
+  # "roleRef" specifies the binding to a Role / ClusterRole
+  kind: ClusterRole #this must be Role or ClusterRole
+  name: createAutoscaling # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io
