@@ -70,7 +70,7 @@ pipeline {
                         } catch (Exception ignored) {
                             deploymentName = "$REPOSITORY-deployment"
                         }
-                        sh "kubectl rollout status deployments $REPOSITORY-deployment -n zevrant-home-services-$ENVIRONMENT --timeout=${timeout}s"
+                        sh "kubectl rollout status deployments $deploymentName -n zevrant-home-services-$ENVIRONMENT --timeout=${timeout}s"
                     }
                 }
             }
