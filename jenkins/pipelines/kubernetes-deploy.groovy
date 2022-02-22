@@ -26,13 +26,21 @@ pipeline {
                     script {
                         sh "sed -i 's/\$ENVIRONMENT/$ENVIRONMENT/g' ./database.yml"
                         sh "kubectl apply -n zevrant-home-services-$ENVIRONMENT -f ./database.yml"
-                        sh "kubectl rollout status deployments $REPOSITORY-db-deployment -n zevrant-home-services-$ENVIRONMENT --timeout=5m"
+                        String deploymentName = ""
+                        try{
+                            sh "kubectl get deployment $REPOSITORY-db"
+                            deploymentName = "$REPOSITORY-db"
+                        } catch (Exception ignored) {
+                            deploymentName = "$REPOSITORY-db-deployment"
+                        }
+
+                        sh "kubectl rollout status deployments $deploymentName -n zevrant-home-services-$ENVIRONMENT --timeout=5m"
                     }
                 }
             }
         }
 
-        stage("Deploy") {
+        stage("Deploy Micro Service") {
             when { expression { fileExists('deployment.yml') } }
             environment {
                 KUBECONFIG = credentials('jenkins-kubernetes')
@@ -55,6 +63,13 @@ pipeline {
                             }
                         }
                         sh "kubectl apply -n zevrant-home-services-$ENVIRONMENT -f ./deployment.yml"
+                        String deploymentName = ""
+                        try{
+                            sh "kubectl get deployment $REPOSITORY"
+                            deploymentName = "$REPOSITORY"
+                        } catch (Exception ignored) {
+                            deploymentName = "$REPOSITORY-deployment"
+                        }
                         sh "kubectl rollout status deployments $REPOSITORY-deployment -n zevrant-home-services-$ENVIRONMENT --timeout=${timeout}s"
                     }
                 }
