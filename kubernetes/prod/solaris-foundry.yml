@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: solaris-foundry
+  namespace: zevrant-home-services-prod
+spec:
+  type: NodePort
+  ports:
+    - port: 30000
+      targetPort: 30000
+      nodePort: 30130
+  selector:
+    app: solaris-foundry
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: solaris-foundry
+  labels:
+    app: solaris-foundry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: solaris-foundry
+  template:
+    metadata:
+      labels:
+        app: solaris-foundry
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      volumes:
+        - name: solaris-foundry
+          nfs:
+            server: nfs-controller.zevrant-services.com
+            path: /nfs/exports/solaris/foundry
+      nodeSelector:
+        architecture: amd64
+      containers:
+        - name: solaris-foundry
+          image: docker.io/zevrant/zevrant-foundry-services:0.9.254
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 30000
+          volumeMounts:
+            - name: solaris-foundry
+              mountPath: /home/foundry/.local/share/FoundryVTT
+          env:
+            - name: ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: solaris-foundry-vault
+                  key: username
+            - name: SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: solaris-foundry-vault
+                  key: password
+            - name: INITIAL_ADMIN_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: solaris-foundry-vault
+                  key: admin
+            - name: SERVICE_NAME
+              value: solaris-foundry
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: ENVIRONMENT
+              value: develop
+

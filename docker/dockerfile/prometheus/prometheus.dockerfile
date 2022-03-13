@@ -22,7 +22,13 @@ RUN url="$(curl -s https://api.github.com/repos/prometheus/prometheus/releases/l
     && cp -r prometheus/console_libraries /etc/prometheus \
     && chown -R prome:prome /etc/prometheus/consoles \
     && chown -R prome:prome /etc/prometheus/console_libraries \
-    && rm -rf prometheus.tar.gz prometheus/
+    && rm -rf prometheus.tar.gz prometheus
+
+
+#Install root ca cert
+RUN curl 'http://zevrant-01.zevrant-services.com:7644/cacert.pem' -o /usr/local/share/ca-certificates/zevrant-services-ca-root.crt \
+    && update-ca-certificates
+
 
 ADD prometheus.yml /etc/prometheus/
 ADD rules.yml /etc/prometheus

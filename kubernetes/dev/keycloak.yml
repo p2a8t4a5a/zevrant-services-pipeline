@@ -19,7 +19,7 @@ metadata:
     app: zevrant-keycloak-service
 spec:
   #  Additional config is needed to switch to HA mode
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: zevrant-keycloak-service
