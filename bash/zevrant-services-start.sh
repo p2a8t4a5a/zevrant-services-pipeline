@@ -13,8 +13,16 @@ if [[ "$ENVIRONMENT" == "prod" ]]; then
   VAULT_ADDR="https://vault.zevrant-services.com"
 fi
 
+profile=""
+
+if [[ "$ENVIRONMENT" == "local" ]]; then
+  profile="shared"
+else
+  profile="$ENVIRONMENT"
+fi
+
 openssl req -newkey rsa:4096 -nodes -keyout ~/private.pem -days 365 -out ~/public.csr -config ~/openssl.conf
-token=$(curl ${VAULT_ADDR}/v1/auth/develop/login/$ACCESS_KEY_ID -X POST --data "{\"password\": \"$SECRET_ACCESS_KEY\"}" --fail)
+token=$(curl ${VAULT_ADDR}/v1/auth/${profile}/login/$ACCESS_KEY_ID -X POST --data "{\"password\": \"$SECRET_ACCESS_KEY\"}" --fail)
 token=$(echo "$token" | jq .auth.client_token)
 token=$(echo "$token" | cut -c 2-$((${#token}-1)))
 username=$(curl --header "X-Vault-token: $token" "${VAULT_ADDR}/v1/${ENVIRONMENT}/data/certificate/username" --fail)
