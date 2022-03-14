@@ -14,9 +14,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: zevrant-keycloak-service-db-deployment
-  annotations:
-    iam.amazonaws.com/role: OauthServiceRole
+  name: zevrant-keycloak-service-db
   labels:
     app: zevrant-keycloak-service-db
 spec:

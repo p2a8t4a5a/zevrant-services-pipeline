@@ -4,5 +4,5 @@ metadata:
   name: readOnly
 rules:
   - apiGroups: [ "", "apps", "autoscaling" ] # "" indicates the core API group
-    resources: [ "pods", "services", "deployments", "horizontalpodautoscalers" ]
+    resources: [ "pods", "services", "deployments", "horizontalpodautoscalers", "pods/log" ]
     verbs: [ "get", "watch", "list" ]
